@@ -1,0 +1,67 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Get boot.img from MIUI Stock ROM
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    
+env:
+  ROM_URL: https://bigota.d.miui.com/V12.5.19.0.RKHCNXM/miui_ALIOTH_V12.5.19.0.RKHCNXM_bdf07af7bf_11.0.zip
+  TZ: Asia/Shanghai
+
+jobs:
+  make:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+        architecture: x64
+        
+    - name: Init environment
+      run: |
+        cd ~
+        python -m pip install wheel
+        python -m pip install protobuf
+        python -m pip install bsdiff4
+        python -m pip install requests
+        
+    - name: Clone the tools source code
+      run: |
+        cd ~
+        git clone https://github.com/vm03/payload_dumper.git
+        git clone https://github.com/iamleot/transferwee.git
+        
+    - name: Download the ROM
+      run: |
+        cd ~
+        wget -O rom.zip $ROM_URL
+        
+    - name: Unzip&Remove the ROM
+      run: |
+        cd ~
+        unzip rom.zip -d payload_dumper && rm rom.zip
+        
+    - name: Extract&Zip bootimg from the payload.bin
+      run: |
+        cd ~
+        cd payload_dumper
+        python payload_dumper.py payload.bin
+        cd output && tar -czvf bootimg.tar.gz boot.img
+        
+    - name: Upload the bootimg to WeTransfer
+      run: |
+        cd ~
+        cd transferwee
+        python transferwee.py upload -m $ROM_URL ~/payload_dumper/output/bootimg.tar.gz
+        
