@@ -13,6 +13,7 @@ on:
       - main
     
 env:
+  # https://xiaomifirmwareupdater.com/
   ROM_URL: https://bigota.d.miui.com/V12.5.19.0.RKHCNXM/miui_ALIOTH_V12.5.19.0.RKHCNXM_bdf07af7bf_11.0.zip
   TZ: Asia/Shanghai
 
@@ -50,18 +51,27 @@ jobs:
     - name: Unzip&Remove the ROM
       run: |
         cd ~
-        unzip rom.zip -d payload_dumper && rm rom.zip
+        unzip rom.zip -d payload_dumper && rm -v rom.zip
         
     - name: Extract&Zip bootimg from the payload.bin
       run: |
         cd ~
         cd payload_dumper
         python payload_dumper.py payload.bin
-        cd output && tar -czvf bootimg.tar.gz boot.img
+        cd output && tar -cvzf bootimg.tar.gz boot.img
         
-    - name: Upload the bootimg to WeTransfer
+    - name: Upload the bootimg to NetDisks
       run: |
-        cd ~
-        cd transferwee
+        # WeTransfer
+        cd ~ && cd transferwee
         python transferwee.py upload -m $ROM_URL ~/payload_dumper/output/bootimg.tar.gz
+        
+        
+        # https://github.com/Mikubill/transfer
+        cd ~
+        curl -sL https://git.io/file-transfer | sh
+        # AirPortal
+        ./transfer arp ~/payload_dumper/output/bootimg.tar.gz
+        # 奶牛快传
+        ./transfer cow ~/payload_dumper/output/bootimg.tar.gz
         
