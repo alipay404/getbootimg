@@ -58,21 +58,21 @@ jobs:
         cd ~
         cd payload_dumper
         # Only boot.img is needed.
-        python payload_dumper.py payload.bin --images boot
-        cd output && tar -cvzf bootimg.tgz boot.img
+        # python payload_dumper.py payload.bin --images boot
+        # cd output && tar -cvzf bootimg.tgz boot.img
         
     - name: Upload the bootimg to NetDisks
       run: |
         # WeTransfer
         cd ~ && cd transferwee
-        python transferwee.py upload -m $ROM_URL ~/payload_dumper/output/bootimg.tgz
+        python transferwee.py upload -m $ROM_URL ~/payload_dumper/boot.img
         
         
         # https://github.com/Mikubill/transfer
         cd ~
         curl -sL https://git.io/file-transfer | sh
         # AirPortal
-        ./transfer arp ~/payload_dumper/output/bootimg.tgz
+        ./transfer arp ~/payload_dumper/boot.img
         # 奶牛快传
-        ./transfer cow ~/payload_dumper/output/bootimg.tgz
+        ./transfer cow ~/payload_dumper/boot.img
         
